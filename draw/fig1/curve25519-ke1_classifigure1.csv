@@ -1,0 +1,16 @@
+# strongSwan IPsec 握手完成时间测试结果
+# 测试时间: Fri 18 Jul 05:10:03 +00 2025
+# 连接名称: net-net
+# 列格式: test_num,hct_ms,connection_status,error_message,timestamp,network_conditions,interface,local_ip,remote_ip
+test_num,hct_ms,connection_status,error_message,timestamp,network_conditions,interface,local_ip,remote_ip
+1,0,FAILED,Connection failed,2025-07-18 05:12:52,ideal,ens33,192.168.31.114,192.168.31.135
+2,0,FAILED,Connection failed,2025-07-18 05:16:58,ideal,ens33,192.168.31.114,192.168.31.135
+3,0,FAILED,Connection failed,2025-07-18 05:19:49,ideal,ens33,192.168.31.114,192.168.31.135
+4,0,FAILED,Connection failed,2025-07-18 05:22:39,ideal,ens33,192.168.31.114,192.168.31.135
+5,0,FAILED,Connection failed,2025-07-18 05:25:31,ideal,ens33,192.168.31.114,192.168.31.135
+6,0,FAILED,Connection failed,2025-07-18 05:28:21,ideal,ens33,192.168.31.114,192.168.31.135
+7,0,FAILED,Connection failed,2025-07-18 05:31:12,ideal,ens33,192.168.31.114,192.168.31.135
+8,0,FAILED,Connection failed,2025-07-18 05:34:03,ideal,ens33,192.168.31.114,192.168.31.135
+9,0,FAILED,Connection failed,2025-07-18 05:36:54,ideal,ens33,192.168.31.114,192.168.31.135
+10,0,FAILED,Connection failed,2025-07-18 05:39:45,ideal,ens33,192.168.31.114,192.168.31.135
+11,0,FAILED,Connection failed,2025-07-18 05:42:36,ideal,ens33,192.168.31.114,192.168.31.135

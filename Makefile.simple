@@ -1,0 +1,66 @@
+# Simple Makefile for basic task manager function testing
+CC = gcc
+CFLAGS = -Wall -Wextra -g -O0 -std=c99
+
+# Targets
+TARGET_SIMPLE = test_simple
+TARGET_FULL = test_task_manager
+
+# Default target - compile the simple version
+all: $(TARGET_SIMPLE)
+
+# Compile the simplified test (no external dependencies)
+$(TARGET_SIMPLE): test_simple.c
+	@echo "Compiling simplified task manager test..."
+	$(CC) $(CFLAGS) -o $@ $<
+	@echo "✓ Compilation successful!"
+	@echo "Run with: ./$(TARGET_SIMPLE)"
+
+# Try to compile the full version (requires strongswan libraries)
+full: test.c
+	@echo "Attempting to compile full version..."
+	@echo "This requires strongswan development libraries"
+	$(CC) $(CFLAGS) \
+		-I./src/libstrongswan \
+		-I./src/libcharon \
+		-I./src/include \
+		-DHAVE_CONFIG_H \
+		-o $(TARGET_FULL) test.c \
+		-lpthread -ldl -lm
+
+# Run the simple test
+run: $(TARGET_SIMPLE)
+	@echo "Running simplified test..."
+	./$(TARGET_SIMPLE)
+
+# Run with verbose output
+run-verbose: $(TARGET_SIMPLE)
+	@echo "Running simplified test with verbose output..."
+	./$(TARGET_SIMPLE) 2>&1 | tee test_output.log
+
+# Clean up
+clean:
+	rm -f $(TARGET_SIMPLE) $(TARGET_FULL) test_output.log *.o
+
+# Check if we have the necessary tools
+check:
+	@echo "Checking build environment..."
+	@which gcc > /dev/null && echo "✓ GCC found" || echo "✗ GCC not found"
+	@which make > /dev/null && echo "✓ Make found" || echo "✗ Make not found"
+	@echo "✓ Environment check complete"
+
+# Show help
+help:
+	@echo "Available targets:"
+	@echo "  all      - Build simplified test program (default)"
+	@echo "  full     - Try to build full test program (requires strongswan libs)"
+	@echo "  run      - Build and run simplified test"
+	@echo "  run-verbose - Run with verbose output and save log"
+	@echo "  clean    - Remove compiled files"
+	@echo "  check    - Check build environment"
+	@echo "  help     - Show this help"
+	@echo ""
+	@echo "Quick start:"
+	@echo "  make && make run"
+
+.PHONY: all full run run-verbose clean check help 

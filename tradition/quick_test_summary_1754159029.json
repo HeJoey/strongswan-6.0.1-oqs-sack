@@ -1,0 +1,19 @@
+{
+  "metadata": {
+    "test_type": "quick_traditional_fragmentation_summary",
+    "timestamp": "2025-08-02T18:23:49.315220",
+    "loss_rates_tested": [
+      1
+    ],
+    "tests_per_rate": 5
+  },
+  "summary_statistics": {
+    "1": {
+      "loss_rate": 1,
+      "success_count": 5,
+      "avg_total_transmitted": 2408,
+      "theoretical_transmitted": 2448.729721456994,
+      "efficiency": 99.66777408637874
+    }
+  }
+}

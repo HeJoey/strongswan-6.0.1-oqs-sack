@@ -1,0 +1,2 @@
+loss_rate,success_rate,success_count,failed_count,total_count,avg_hct_ms,median_hct_ms,std_dev_hct_ms,avg_retransmissions
+5,100.0000,50,0,50,1722.86,1364.360,1279.1,1.14

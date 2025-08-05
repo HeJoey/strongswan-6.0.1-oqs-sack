@@ -1,0 +1,15 @@
+# 突发丢包率测试汇总统计
+# 适用于生成图5和图6
+# 丢包率(%),成功率(%),HCT均值(s),HCT中位数(s),HCT标准差(s),平均重传次数
+[2025-07-19 14:27:43] [0;32m统计数据已保存: /home/moon/Downloads/strongswan-6.0.1-oqs-new-selective-fragment-retransmission-v1.1/draw/fig2/burst_loss_results_20250719_141224/statistics_0pct.txt[0m
+0,0
+0,0,0,0,0
+[2025-07-19 14:27:43] [0;32m统计数据已保存: /home/moon/Downloads/strongswan-6.0.1-oqs-new-selective-fragment-retransmission-v1.1/draw/fig2/burst_loss_results_20250719_141224/statistics_5pct.txt[0m
+5,0
+0,0,0,0,0
+[2025-07-19 14:27:43] [0;32m统计数据已保存: /home/moon/Downloads/strongswan-6.0.1-oqs-new-selective-fragment-retransmission-v1.1/draw/fig2/burst_loss_results_20250719_141224/statistics_10pct.txt[0m
+10,0
+0,0,0,0,0
+[2025-07-19 14:27:43] [0;32m统计数据已保存: /home/moon/Downloads/strongswan-6.0.1-oqs-new-selective-fragment-retransmission-v1.1/draw/fig2/burst_loss_results_20250719_141224/statistics_15pct.txt[0m
+15,0
+0,0,0,0,0

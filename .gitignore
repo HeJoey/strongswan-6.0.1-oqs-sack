@@ -1,0 +1,32 @@
+# Build directories
+build/
+*.o
+*.a
+*.so
+*.dylib
+
+# Generated files
+*.log
+*.tmp
+*.cache
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Configuration files with sensitive data
+*.conf
+*.key
+*.crt
+*.pem
+*.p12
+
+# Test artifacts
+test_results/
+coverage/ 

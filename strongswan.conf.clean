@@ -1,0 +1,13 @@
+charon {
+    max_packet = 65536
+    
+    # 新的选择性片段重传机制配置
+    selective_fragment_retransmission = yes
+    
+    load_modular = yes
+    plugins {
+        include strongswan.d/charon/*.conf
+    }
+}
+
+include strongswan.d/*.conf 

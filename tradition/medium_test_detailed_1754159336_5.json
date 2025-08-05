@@ -1,0 +1,257 @@
+{
+  "metadata": {
+    "test_type": "medium_traditional_fragmentation_performance",
+    "loss_rate": 5,
+    "start_time": "2025-08-02T18:28:56.914012",
+    "tests_per_rate": 20,
+    "total_tests": 20,
+    "success_count": 19
+  },
+  "theoretical_analysis": {
+    "parameters": {
+      "N": 2,
+      "D": 1200,
+      "P": 0.05,
+      "single_attempt_success_rate": 0.9025
+    },
+    "theoretical": {
+      "total_data_traditional": 2659.279778393352,
+      "expected_attempts": 1.10803324099723,
+      "success_rate": 0.9025
+    }
+  },
+  "performance_analysis": {
+    "count": 19,
+    "total_transmitted": {
+      "mean": 2534.7368421052633,
+      "median": 2408,
+      "std": 552.4330871603128,
+      "min": 2408,
+      "max": 4816,
+      "values": [
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        2408,
+        4816,
+        2408,
+        2408,
+        2408,
+        2408
+      ]
+    },
+    "retransmitted": {
+      "mean": 0.05263157894736842,
+      "median": 0,
+      "std": 0.22941573387056177,
+      "min": 0,
+      "max": 1,
+      "distribution": {
+        "0": 18,
+        "1": 1
+      }
+    }
+  },
+  "detailed_results": [
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:27:21.889660",
+      "mode": "traditional",
+      "run_number": 1,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:27:25.167436",
+      "mode": "traditional",
+      "run_number": 2,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:27:28.555376",
+      "mode": "traditional",
+      "run_number": 3,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:27:31.918383",
+      "mode": "traditional",
+      "run_number": 4,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:27:35.173868",
+      "mode": "traditional",
+      "run_number": 5,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:27:38.505441",
+      "mode": "traditional",
+      "run_number": 6,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:27:51.864538",
+      "mode": "traditional",
+      "run_number": 7,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:27:55.220061",
+      "mode": "traditional",
+      "run_number": 8,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:03.573247",
+      "mode": "traditional",
+      "run_number": 9,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:06.930032",
+      "mode": "traditional",
+      "run_number": 10,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:10.783256",
+      "mode": "traditional",
+      "run_number": 11,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:21.224699",
+      "mode": "traditional",
+      "run_number": 13,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:24.613130",
+      "mode": "traditional",
+      "run_number": 14,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:28.022396",
+      "mode": "traditional",
+      "run_number": 15,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02T18:28:36.390312",
+      "mode": "traditional",
+      "run_number": 16,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:39.752512",
+      "mode": "traditional",
+      "run_number": 17,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:48.105661",
+      "mode": "traditional",
+      "run_number": 18,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:51.480586",
+      "mode": "traditional",
+      "run_number": 19,
+      "loss_rate": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02T18:28:55.260381",
+      "mode": "traditional",
+      "run_number": 20,
+      "loss_rate": 5
+    }
+  ]
+}

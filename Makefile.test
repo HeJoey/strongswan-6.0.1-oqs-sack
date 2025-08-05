@@ -1,0 +1,98 @@
+# Makefile for strongswan task manager test program
+CC = gcc
+CFLAGS = -Wall -Wextra -g -O0 -std=c99
+LDFLAGS = 
+
+# strongswan directories
+STRONGSWAN_SRC = ./src
+STRONGSWAN_INCLUDE = $(STRONGSWAN_SRC)
+
+# Include paths
+INCLUDES = -I$(STRONGSWAN_INCLUDE) \
+           -I$(STRONGSWAN_SRC)/libstrongswan \
+           -I$(STRONGSWAN_SRC)/libcharon \
+           -I$(STRONGSWAN_SRC)/include \
+           -I/usr/include/strongswan
+
+# Library paths (adjust based on your strongswan installation)
+LIBS = -lstrongswan \
+       -lcharon \
+       -lpthread \
+       -ldl \
+       -lm
+
+# Object files from strongswan that we might need
+STRONGSWAN_OBJS = 
+
+# Target
+TARGET = test_task_manager
+SOURCE = test.c
+
+# Default target
+all: $(TARGET)
+
+# Compile the test program
+$(TARGET): $(SOURCE)
+	@echo "Compiling strongswan task manager test..."
+	@echo "Note: This requires strongswan development libraries to be installed"
+	@echo "      or you need to build strongswan first"
+	$(CC) $(CFLAGS) $(INCLUDES) -o $@ $< $(LIBS) $(LDFLAGS)
+
+# Alternative compilation using local strongswan build
+local: $(SOURCE)
+	@echo "Compiling with local strongswan build..."
+	@echo "This assumes you have already built strongswan in the current directory"
+	$(CC) $(CFLAGS) \
+		-I$(STRONGSWAN_SRC)/libstrongswan \
+		-I$(STRONGSWAN_SRC)/libcharon \
+		-I$(STRONGSWAN_SRC)/include \
+		-I. \
+		-DHAVE_CONFIG_H \
+		-o $(TARGET) $(SOURCE) \
+		$(STRONGSWAN_SRC)/libstrongswan/.libs/libstrongswan.a \
+		$(STRONGSWAN_SRC)/libcharon/.libs/libcharon.a \
+		-lpthread -ldl -lm
+
+# Simple compilation for basic testing (minimal dependencies)
+simple: $(SOURCE)
+	@echo "Compiling simple version (may have link errors)..."
+	$(CC) $(CFLAGS) \
+		-I$(STRONGSWAN_SRC)/libstrongswan \
+		-I$(STRONGSWAN_SRC)/libcharon \
+		-I$(STRONGSWAN_SRC)/include \
+		-I. \
+		-DHAVE_CONFIG_H \
+		-DTEST_MODE \
+		-o $(TARGET)_simple $(SOURCE) \
+		-lpthread -ldl -lm
+
+# Clean up
+clean:
+	rm -f $(TARGET) $(TARGET)_simple *.o
+
+# Install dependencies (Ubuntu/Debian)
+install-deps:
+	@echo "Installing strongswan development dependencies..."
+	sudo apt-get update
+	sudo apt-get install libstrongswan-dev strongswan-dev build-essential
+
+# Help
+help:
+	@echo "Available targets:"
+	@echo "  all         - Compile with system strongswan libraries"
+	@echo "  local       - Compile with local strongswan build"
+	@echo "  simple      - Compile minimal version"
+	@echo "  clean       - Remove compiled files"
+	@echo "  install-deps- Install development dependencies"
+	@echo "  help        - Show this help"
+	@echo ""
+	@echo "Prerequisites:"
+	@echo "  1. strongswan development libraries installed, OR"
+	@echo "  2. strongswan built in current directory"
+	@echo ""
+	@echo "Usage examples:"
+	@echo "  make                    # Try system libraries"
+	@echo "  make local              # Use local build"
+	@echo "  make install-deps       # Install dependencies first"
+
+.PHONY: all local simple clean install-deps help 

@@ -1,0 +1,822 @@
+{
+  "summary": {
+    "total_runs": 100,
+    "successful_runs": 95,
+    "failed_runs": 5,
+    "success_rate": "95.0%",
+    "start_time": "2025-08-02 13:12:35",
+    "end_time": "2025-08-02 13:12:35"
+  },
+  "theoretical_calculations": {
+    "parameters": {
+      "N": 2,
+      "D": 1200,
+      "P": 0.3,
+      "single_attempt_success_rate": 0.48999999999999994
+    },
+    "theoretical": {
+      "total_data_all": 4897.95918367347,
+      "total_data_selective": 3428.571428571429,
+      "bandwidth_overhead": 0.42857142857142855,
+      "expected_attempts": 2.0408163265306127
+    }
+  },
+  "statistical_analysis": {
+    "retransmitted": {
+      "mean": 0.7368421052631579,
+      "median": 1,
+      "std": 0.853160910165145,
+      "min": 0,
+      "max": 3,
+      "distribution": {
+        "0": 47,
+        "3": 3,
+        "2": 16,
+        "1": 29
+      }
+    },
+    "packets": {
+      "mean": 2,
+      "median": 2,
+      "std": 0.0,
+      "min": 2,
+      "max": 2
+    },
+    "single_transmission": {
+      "mean": 2408,
+      "median": 2408,
+      "std": 0.0,
+      "min": 2408,
+      "max": 2408
+    },
+    "total_transmitted": {
+      "mean": 4182.315789473684,
+      "median": 4816,
+      "std": 2054.411471677669,
+      "min": 2408,
+      "max": 9632
+    }
+  },
+  "results": [
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:01:16",
+      "run_number": 1
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:01:18",
+      "run_number": 2
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:01:21",
+      "run_number": 3
+    },
+    {
+      "retransmitted": 3,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 9632,
+      "timestamp": "2025-08-02 13:01:43",
+      "run_number": 4
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:01:53",
+      "run_number": 5
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:01:55",
+      "run_number": 6
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:02:03",
+      "run_number": 7
+    },
+    {
+      "retransmitted": 3,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 9632,
+      "timestamp": "2025-08-02 13:02:19",
+      "run_number": 8
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:02:24",
+      "run_number": 9
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:02:26",
+      "run_number": 10
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:02:34",
+      "run_number": 11
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:02:38",
+      "run_number": 12
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:02:40",
+      "run_number": 13
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:02:44",
+      "run_number": 14
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:02:58",
+      "run_number": 15
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:03:00",
+      "run_number": 16
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:03:12",
+      "run_number": 17
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:03:21",
+      "run_number": 18
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:03:34",
+      "run_number": 19
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:03:37",
+      "run_number": 20
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:03:43",
+      "run_number": 21
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:03:47",
+      "run_number": 22
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:03:55",
+      "run_number": 23
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:04:01",
+      "run_number": 24
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:04:09",
+      "run_number": 25
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:04:18",
+      "run_number": 26
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:04:30",
+      "run_number": 27
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:04:34",
+      "run_number": 28
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:04:42",
+      "run_number": 29
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:04:44",
+      "run_number": 30
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:04:47",
+      "run_number": 31
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:04:51",
+      "run_number": 32
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:04:53",
+      "run_number": 33
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:04:55",
+      "run_number": 34
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:05:03",
+      "run_number": 35
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:05:13",
+      "run_number": 36
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:05:17",
+      "run_number": 37
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:05:20",
+      "run_number": 38
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:05:24",
+      "run_number": 39
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:05:32",
+      "run_number": 40
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:05:36",
+      "run_number": 41
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:05:41",
+      "run_number": 42
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:05:45",
+      "run_number": 43
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:05:47",
+      "run_number": 44
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:05:51",
+      "run_number": 45
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:05:56",
+      "run_number": 46
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:06:04",
+      "run_number": 47
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:06:08",
+      "run_number": 48
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:06:14",
+      "run_number": 49
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:06:19",
+      "run_number": 50
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:06:23",
+      "run_number": 51
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:06:27",
+      "run_number": 52
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:06:33",
+      "run_number": 53
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:06:36",
+      "run_number": 54
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:06:44",
+      "run_number": 55
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:06:48",
+      "run_number": 56
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:06:51",
+      "run_number": 57
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:06:55",
+      "run_number": 58
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:06:59",
+      "run_number": 59
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:07:04",
+      "run_number": 60
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:07:08",
+      "run_number": 61
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:07:10",
+      "run_number": 62
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:08:04",
+      "run_number": 65
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:08:09",
+      "run_number": 66
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:08:19",
+      "run_number": 67
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:08:29",
+      "run_number": 68
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:08:39",
+      "run_number": 69
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:08:42",
+      "run_number": 70
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:08:46",
+      "run_number": 71
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:08:54",
+      "run_number": 72
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:09:19",
+      "run_number": 74
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:09:21",
+      "run_number": 75
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:09:24",
+      "run_number": 76
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:09:26",
+      "run_number": 77
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:09:32",
+      "run_number": 78
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:09:34",
+      "run_number": 79
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:10:03",
+      "run_number": 81
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:10:13",
+      "run_number": 82
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:10:15",
+      "run_number": 83
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:10:20",
+      "run_number": 84
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:10:44",
+      "run_number": 86
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:10:54",
+      "run_number": 87
+    },
+    {
+      "retransmitted": 3,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 9632,
+      "timestamp": "2025-08-02 13:11:10",
+      "run_number": 88
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:11:17",
+      "run_number": 89
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:11:27",
+      "run_number": 90
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:11:31",
+      "run_number": 91
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:11:41",
+      "run_number": 92
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:12:01",
+      "run_number": 93
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:12:03",
+      "run_number": 94
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:12:08",
+      "run_number": 95
+    },
+    {
+      "retransmitted": 1,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 4816,
+      "timestamp": "2025-08-02 13:12:18",
+      "run_number": 96
+    },
+    {
+      "retransmitted": 2,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 7224,
+      "timestamp": "2025-08-02 13:12:28",
+      "run_number": 97
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:12:30",
+      "run_number": 98
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:12:32",
+      "run_number": 99
+    },
+    {
+      "retransmitted": 0,
+      "packets": 2,
+      "single_transmission": 2408,
+      "total_transmitted": 2408,
+      "timestamp": "2025-08-02 13:12:35",
+      "run_number": 100
+    }
+  ]
+}

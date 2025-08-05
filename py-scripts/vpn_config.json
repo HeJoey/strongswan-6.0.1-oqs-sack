@@ -1,0 +1,19 @@
+{
+  "connections": {
+    "host-host": {
+      "remote_host": "192.168.230.234",
+      "description": "主机到主机连接",
+      "type": "host-host"
+    },
+    "net-net": {
+      "remote_host": "192.168.31.136",
+      "description": "网络到网络连接",
+      "type": "net-net"
+    }
+  },
+  "settings": {
+    "charon_log_level": "-1",
+    "check_interval": 5,
+    "swanctl_conf": "/etc/swanctl/swanctl.conf"
+  }
+} 
