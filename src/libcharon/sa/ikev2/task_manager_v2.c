@@ -447,7 +447,44 @@ static void send_packets(private_task_manager_t *this, array_t *packets,
 		{
 			clone->set_destination(clone, dst->clone(dst));
 		}
-		charon->sender->send(charon->sender, clone);
+		
+		// 调试功能：模拟第一个分片丢失（仅在初始发送时，不影响重传）
+		bool simulate_loss = false;
+		
+		// 通过配置控制是否启用模拟丢包功能
+		bool enable_loss_simulation = lib->settings->get_bool(lib->settings,
+			"%s.debug.simulate_first_fragment_loss", FALSE, lib->ns);
+		
+		if (enable_loss_simulation && 
+		    this->initiating.retransmitted == 0 && 
+		    array_count(packets) > 1 && 
+		    i == 0)
+		{
+			// 检查是否包含分片载荷，确认这是分片消息
+			chunk_t data = packet->get_data(packet);
+			if (data.len > 50)  // 简单检查数据长度
+			{
+				simulate_loss = true;
+				DBG0(DBG_IKE, "SIMULATE_FRAGMENT_LOSS: dropping first fragment (packet %d/%d) for selective retransmission testing", 
+					 i + 1, array_count(packets));
+				DBG0(DBG_IKE, "TIP: To disable this, set charon.debug.simulate_first_fragment_loss = no");
+			}
+		}
+		
+		if (!simulate_loss)
+		{
+			charon->sender->send(charon->sender, clone);
+			DBG0(DBG_IKE, "PACKET_SENT: packet %d/%d sent (size=%d bytes)%s", 
+				 i + 1, array_count(packets), clone->get_data(clone).len,
+				 this->initiating.retransmitted > 0 ? " [RETRANSMIT]" : " [INITIAL]");
+		}
+		else
+		{
+			// 模拟丢失：直接销毁包而不发送
+			clone->destroy(clone);
+			DBG0(DBG_IKE, "PACKET_DROPPED: packet %d/%d dropped for testing (size=%d bytes)", 
+				 i + 1, array_count(packets), packet->get_data(packet).len);
+		}
 	}
 
 	// 累计传输数据量到tracker（如果存在）
@@ -1932,12 +1969,34 @@ static status_t handle_fragment(private_task_manager_t *this,
 
 	if (status == SUCCESS)
 	{
-		/* reinject the reassembled message */
-		status = this->ike_sa->process_message(this->ike_sa, *defrag);
-		if (status == SUCCESS)
+		/* Check if this is the first time we're processing this complete message
+		 * or if it's a retransmitted fragment that just completed an already processed message
+		 */
+		uint32_t message_id = msg->get_message_id(msg);
+		exchange_type_t expected_type = (*defrag)->get_exchange_type(*defrag);
+		
+		/* Check if we have already processed a message with this ID and exchange type */
+		bool already_processed = (this->responding.mid >= message_id && 
+								  this->ike_sa->get_state(this->ike_sa) > IKE_CONNECTING);
+		
+		if (already_processed)
 		{
-			/* avoid processing the last fragment */
-			status = NEED_MORE;
+			/* This message was already processed, don't reinject to avoid state conflicts */
+			DBG0(DBG_IKE, "FRAGMENT_RETRANS_COMPLETION: fragment %d completed already processed message_id=%d, skipping reinject",
+				 fragment->get_fragment_number(fragment), message_id);
+			status = NEED_MORE; /* Continue normal processing without reinject */
+		}
+		else
+		{
+			/* reinject the reassembled message for first-time processing */
+			DBG0(DBG_IKE, "FRAGMENT_NEW_COMPLETION: fragment %d completed new message_id=%d, reinjecting",
+				 fragment->get_fragment_number(fragment), message_id);
+			status = this->ike_sa->process_message(this->ike_sa, *defrag);
+			if (status == SUCCESS)
+			{
+				/* avoid processing the last fragment */
+				status = NEED_MORE;
+			}
 		}
 		(*defrag)->destroy(*defrag);
 		*defrag = NULL;
@@ -3805,6 +3864,10 @@ static void process_fragment_ack(private_task_manager_t *this, message_t *messag
 		DBG0(DBG_IKE, "III5_FRAGMENT_ACK_PARTIAL: %d/%d fragments acknowledged for message %d",
 			 this->outgoing_tracker->acked_fragments, this->outgoing_tracker->total_fragments,
 			 message_id);
+		
+		// 立即触发选择性重传 - 不等待定时器
+		DBG0(DBG_IKE, "IMMEDIATE_SELECTIVE_RETRANSMIT: triggering immediate retransmission for missing fragments");
+		retransmit_missing_fragments_simple(this, this->outgoing_tracker);
 	}
 }
 
@@ -4001,7 +4064,20 @@ static void send_immediate_fragment_ack(private_task_manager_t *this, message_t 
     ack_msg->set_request(ack_msg, TRUE);
     /* Use Message ID 0 to follow FRAGMENT_ACK convention */
     ack_msg->set_message_id(ack_msg, 0);
-    // 让 IKE 栈自行选择地址，无需手动设置 source/destination
+    
+    // 设置源地址和目标地址 - 这是必须的！
+    host_t *me = this->ike_sa->get_my_host(this->ike_sa);
+    host_t *other = this->ike_sa->get_other_host(this->ike_sa);
+    if (me && other)
+    {
+        ack_msg->set_source(ack_msg, me->clone(me));
+        ack_msg->set_destination(ack_msg, other->clone(other));
+        DBG0(DBG_IKE, "ACK_ADDRESS_SET: source=%H, destination=%H", me, other);
+    }
+    else
+    {
+        DBG0(DBG_IKE, "ACK_ADDRESS_ERROR: failed to get IKE_SA addresses (me=%p, other=%p)", me, other);
+    }
 	
 	ack_msg->add_payload(ack_msg, (payload_t*)notify);
 	
