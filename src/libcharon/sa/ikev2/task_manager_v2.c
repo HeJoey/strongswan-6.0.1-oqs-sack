@@ -106,16 +106,15 @@ static fragment_tracker_t *create_fragment_tracker(uint32_t message_id, uint16_t
 static void add_fragment_to_tracker(fragment_tracker_t *tracker, uint16_t fragment_id, packet_t *packet);
 static fragment_state_t *find_fragment_in_tracker(fragment_tracker_t *tracker, uint16_t fragment_id);
 static void update_fragment_ack_status(fragment_tracker_t *tracker, fragment_ack_data_t *ack_data);
-static status_t retransmit_missing_fragments(private_task_manager_t *this, fragment_tracker_t *tracker);
 static status_t retransmit_missing_fragments_simple(private_task_manager_t *this, fragment_tracker_t *tracker);
 static void process_fragment_ack(private_task_manager_t *this, message_t *message);
-static void send_fragment_ack(private_task_manager_t *this, message_t *defrag, uint32_t message_id);
 static void send_immediate_fragment_ack(private_task_manager_t *this, message_t *defrag, 
 									   uint32_t message_id, uint16_t fragment_number);
 static void print_intermediate_transmission_stats(private_task_manager_t *this);
 static void print_complete_connection_stats(private_task_manager_t *this);
 static void update_response_transmission_stats(private_task_manager_t *this, uint32_t response_size, uint32_t retransmissions);
-
+static status_t parse_message(private_task_manager_t *this, message_t *msg);
+static bool has_fragment_ack_notify(message_t *msg);
 /**
  * private data of the task manager
  */
@@ -254,10 +253,7 @@ struct private_task_manager_t {
 	 */
 	job_t *current_retransmit_job;
 
-	/**
-	 * Phase separation mode: 0=normal, 1=init_only, 2=auth_only
-	 */
-	int phase_separation_mode;
+
 	
 	/**
 	 * Connection start time for statistics
@@ -1101,10 +1097,10 @@ static status_t process_response(private_task_manager_t *this,
 {
 	enumerator_t *enumerator;
 	task_t *task;
+	status_t status;
+	DBG0(DBG_IKE, "line %d: process_response enter", __LINE__);
+	/* First, parse the message so that payloads are accessible */
 
-	/* Process fragment acknowledgment if present */
-	process_fragment_ack(this, message);
-	
 	// 添加：在IKE_INTERMEDIATE完成后输出统计
 	if (message->get_exchange_type(message) == IKE_INTERMEDIATE)
 	{
@@ -1514,6 +1510,7 @@ static status_t process_request(private_task_manager_t *this,
 	notify_payload_t *notify;
 	delete_payload_t *delete;
 	ike_sa_state_t state;
+	bool ack_only = FALSE;
 
 	/* Check if peer supports selective fragment retransmission 
 	 * This should work for both IKE_SA_INIT and IKE_INTERMEDIATE requests */
@@ -1524,7 +1521,7 @@ static status_t process_request(private_task_manager_t *this,
 	}
 
 	if (array_count(this->passive_tasks) == 0)
-	{	/* create tasks depending on request type, if not already some queued */
+	{   /* create tasks depending on request type, if not already some queued */
 		state = this->ike_sa->get_state(this->ike_sa);
 		switch (message->get_exchange_type(message))
 		{
@@ -1563,7 +1560,7 @@ static status_t process_request(private_task_manager_t *this,
 				break;
 			}
 			case CREATE_CHILD_SA:
-			{	/* FIXME: we should prevent this on mediation connections */
+			{   /* FIXME: we should prevent this on mediation connections */
 				bool notify_found = FALSE, ts_found = FALSE;
 
 				if (state == IKE_CREATED ||
@@ -1580,7 +1577,7 @@ static status_t process_request(private_task_manager_t *this,
 					switch (payload->get_type(payload))
 					{
 						case PLV2_NOTIFY:
-						{	/* if we find a rekey notify, its CHILD_SA rekeying */
+						{   /* if we find a rekey notify, its CHILD_SA rekeying */
 							notify = (notify_payload_t*)payload;
 							if (notify->get_notify_type(notify) == REKEY_SA &&
 								(notify->get_protocol_id(notify) == PROTO_AH ||
@@ -1592,7 +1589,7 @@ static status_t process_request(private_task_manager_t *this,
 						}
 						case PLV2_TS_INITIATOR:
 						case PLV2_TS_RESPONDER:
-						{	/* if we don't find a TS, its IKE rekeying */
+						{   /* if we don't find a TS, its IKE rekeying */
 							ts_found = TRUE;
 							break;
 						}
@@ -1909,8 +1906,8 @@ static status_t handle_fragment(private_task_manager_t *this,
 			 fragment->get_fragment_number(fragment), status,
 			 this->selective_retransmission_enabled ? "enabled" : "disabled");
 		
-		/* Send immediate fragment acknowledgment - ALWAYS for any fragment! */
-		if (this->selective_retransmission_enabled)
+        /* Send immediate fragment acknowledgment - ALWAYS for any fragment! */
+        if (this->selective_retransmission_enabled)
 		{
 			/* Send ACK immediately after receiving each fragment - no delays! */
 			uint16_t fragment_number = fragment->get_fragment_number(fragment);
@@ -1921,10 +1918,10 @@ static status_t handle_fragment(private_task_manager_t *this,
 			
 			send_immediate_fragment_ack(this, *defrag, message_id, fragment_number);
 		}
-		else
-		{
-			DBG1(DBG_IKE, "FRAGMENT_ACK_SKIPPED: selective_retransmission disabled");
-		}
+        else
+        {
+            DBG1(DBG_IKE, "FRAGMENT_ACK_SKIPPED: selective_retransmission disabled");
+        }
 	}
 
 	/* Check for fragment timeout and send selective retransmission request */
@@ -2321,9 +2318,12 @@ METHOD(task_manager_t, process_message, status_t,
 	other = msg->get_source(msg);
 	mid = msg->get_message_id(msg);
 	
-	// 关键修复：在charon->bus->message之前检测ACK，避免payload被消费
+	// CRITICAL FIX: Simplified ACK detection - avoid multiple payload consumption
 	bool is_fragment_ack_request = false;
-	if (msg->get_request(msg) && mid == 0)
+	
+	/* Only do early ACK detection for INFORMATIONAL messages with ID 0 */
+	if (msg->get_request(msg) && mid == 0 && 
+	    msg->get_exchange_type(msg) == INFORMATIONAL)
 	{
 		is_fragment_ack_request = has_fragment_ack_notify(msg);
 		if (is_fragment_ack_request)
@@ -2337,19 +2337,6 @@ METHOD(task_manager_t, process_message, status_t,
 	if (msg->get_request(msg))
 	{
 		bool potential_mid_sync = FALSE;
-		
-		// 优先检查：Fragment ACK消息应该立即处理，无论其他状态如何
-		if (is_fragment_ack_request)
-		{
-			DBG0(DBG_IKE, "RESPONDER_PRIORITY_ACK_DETECTION: processing pre-detected fragment ACK with ID 0");
-			status = parse_message(this, msg);
-			if (status == SUCCESS)
-			{
-				DBG0(DBG_IKE, "RESPONDER_PRIORITY_ACK_PROCESSING: processing fragment ACK without further checks");
-				process_fragment_ack(this, msg);
-			}
-			return SUCCESS;
-		}
 
 		switch (is_retransmit(this, msg))
 		{
@@ -2392,23 +2379,23 @@ METHOD(task_manager_t, process_message, status_t,
 			if (mid == this->initiating.mid)
 	{
 		// 检查是否包含ACK消息
-		if (has_fragment_ack_notify(msg))
-		{
-			DBG0(DBG_IKE, "INITIATOR_RECEIVED_ACK_IN_NORMAL_RESPONSE: ACK found in expected response message ID %d", mid);
-		}
-		status = parse_message(this, msg);
-		
-		// 如果是正常响应但包含ACK，也要处理
-		if (status == SUCCESS && has_fragment_ack_notify(msg))
-		{
-			DBG0(DBG_IKE, "INITIATOR_PROCESSING_ACK_IN_RESPONSE: processing ACK in normal response");
-			process_fragment_ack(this, msg);
-		}
+		// if (has_fragment_ack_notify(msg))
+		// {
+		// 	DBG0(DBG_IKE, "INITIATOR_RECEIVED_ACK_IN_NORMAL_RESPONSE: ACK found in expected response message ID %d", mid);
+		// }
+        status = parse_message(this, msg);
+        DBG0(DBG_IKE, "INITIATOR_RESPONSE_PARSE: message ID %d parsed", mid);
+        /* Fallback: if a normal response carries FRAGMENT_ACK, process it */
+        if (status == SUCCESS && has_fragment_ack_notify(msg))
+        {
+            DBG0(DBG_IKE, "ACK_ON_RESPONSE: processing FRAGMENT_ACK found in normal response (MID=%d)", mid);
+            process_fragment_ack(this, msg);
+        }
 	}
 		else
 		{
 					// 特殊处理：允许简化的ACK消息 (Message ID 0) 作为response通过
-		if (mid == 0 && has_fragment_ack_notify(msg))
+        if (mid == 0 && has_fragment_ack_notify(msg))
 		{
 			DBG0(DBG_IKE, "INITIATOR_RECEIVED_ACK: got ACK response with Message ID 0, parsing now");
 			// 直接解析并处理ACK，不管之前的状态
@@ -2422,7 +2409,7 @@ METHOD(task_manager_t, process_message, status_t,
 					DBG0(DBG_IKE, "INITIATOR_ACK_TRACKER_STATUS: before processing - %d/%d fragments acknowledged", 
 						 this->outgoing_tracker->acked_fragments, this->outgoing_tracker->total_fragments);
 				}
-				process_fragment_ack(this, msg);
+                process_fragment_ack(this, msg);
 				if (this->outgoing_tracker)
 				{
 					DBG0(DBG_IKE, "INITIATOR_ACK_TRACKER_STATUS: after processing - %d/%d fragments acknowledged", 
@@ -2442,15 +2429,31 @@ METHOD(task_manager_t, process_message, status_t,
 
 	if (expected_mid)
 	{
-		// 即使Message ID不匹配，也要检查是否是fragment ACK（使用预检测结果）
-		if (is_fragment_ack_request)
+		/* Message ID mismatch: still check if the packet contains a FRAGMENT_ACK
+		 * (either as a request or as a response). We do this in two steps:
+		 *  1. If we already pre-detected an ACK request (is_fragment_ack_request),
+		 *     we can directly parse and process it (existing behaviour).
+		 *  2. Otherwise, we parse the message and inspect it again. This covers
+		 *     ACKs sent as INFORMATIONAL responses, which were previously missed. */
+        if (is_fragment_ack_request)
 		{
-			DBG0(DBG_IKE, "RESPONDER_FALLBACK_ACK_DETECTION: found fragment ACK with mismatched ID, processing anyway");
+			DBG0(DBG_IKE, "RESPONDER_FALLBACK_ACK_DETECTION: found fragment ACK request with mismatched ID, processing anyway");
 			status = parse_message(this, msg);
-			if (status == SUCCESS)
+            if (status == SUCCESS)
+            {
+                DBG0(DBG_IKE, "RESPONDER_FALLBACK_ACK_PROCESSING: processing fragment ACK request despite ID mismatch");
+                process_fragment_ack(this, msg);
+                return SUCCESS;
+            }
+		}
+		else
+		{
+			/* Parse the message first so that payloads are available for inspection */
+			status = parse_message(this, msg);
+			if (status == SUCCESS && has_fragment_ack_notify(msg))
 			{
-				DBG0(DBG_IKE, "RESPONDER_FALLBACK_ACK_PROCESSING: processing fragment ACK despite ID mismatch");
-				process_fragment_ack(this, msg);
+                DBG0(DBG_IKE, "RESPONDER_FALLBACK_ACK_DETECTION: found fragment ACK (response) with mismatched ID, processing anyway");
+                process_fragment_ack(this, msg);
 				return SUCCESS;
 			}
 		}
@@ -2744,12 +2747,7 @@ METHOD(task_manager_t, queue_ike_auth_only, void,
 	DBG1(DBG_IKE, "queued IKE_AUTH tasks only (phase separation enabled)");
 }
 
-METHOD(task_manager_t, set_phase_separation_mode, void,
-	private_task_manager_t *this, int mode)
-{
-	this->phase_separation_mode = mode;
-	DBG1(DBG_IKE, "set phase separation mode to %d (0=normal, 1=init_only, 2=auth_only)", mode);
-}
+
 
 METHOD(task_manager_t, queue_ike_rekey, void,
 	private_task_manager_t *this)
@@ -3231,7 +3229,7 @@ task_manager_v2_t *task_manager_v2_create(ike_sa_t *ike_sa)
 				.queue_ike = _queue_ike,
 				.queue_ike_init_only = _queue_ike_init_only,
 				.queue_ike_auth_only = _queue_ike_auth_only,
-				.set_phase_separation_mode = _set_phase_separation_mode,
+		
 				.queue_ike_rekey = _queue_ike_rekey,
 				.queue_ike_reauth = _queue_ike_reauth,
 				.queue_ike_delete = _queue_ike_delete,
@@ -3271,7 +3269,7 @@ task_manager_v2_t *task_manager_v2_create(ike_sa_t *ike_sa)
 		.selective_retransmission_enabled = lib->settings->get_bool(lib->settings,
 					"%s.selective_fragment_retransmission", TRUE, lib->ns),
 		.current_retransmit_job = NULL,  // Initialize retransmit job reference
-		.phase_separation_mode = 0,  // Default to normal mode
+
 	);
 
 	retransmission_parse_default(&this->retransmit);
@@ -3397,6 +3395,7 @@ static fragment_state_t *find_fragment_in_tracker(fragment_tracker_t *tracker,
 static void update_fragment_ack_status(fragment_tracker_t *tracker, 
 									   fragment_ack_data_t *ack_data)
 {
+	DBG0(DBG_IKE, "LINE %d: update_fragment_ack_status enter, message_id=%d", __LINE__, tracker->message_id);
 	fragment_state_t *fragment;
 	uint16_t received_count = ntohs(ack_data->received_count);
 	
@@ -3450,14 +3449,13 @@ static void update_fragment_ack_status(fragment_tracker_t *tracker,
 	
 	// 输出当前所有分片的ACK状态（像Sun端一样的详细输出）
 	DBG0(DBG_IKE, "MOON_ACK_CURRENT_STATUS: after processing ACK for message_id=%d", tracker->message_id);
-	enumerator_t *status_enum = array_create_enumerator(tracker->fragments);
-	fragment_state_t *status_frag;
-	while (status_enum->enumerate(status_enum, &status_frag))
+		for (uint16_t fid_print = 1; fid_print <= tracker->total_fragments; fid_print++)
 	{
+		fragment_state_t *st = find_fragment_in_tracker(tracker, fid_print);
+		bool acked_flag = st ? st->acknowledged : FALSE;
 		DBG0(DBG_IKE, "MOON_ACK_FRAGMENT_STATUS: fragment_id=%d, acknowledged=%s", 
-			  status_frag->fragment_id, status_frag->acknowledged ? "YES" : "NO");
+		      fid_print, acked_flag ? "YES" : "NO");
 	}
-	status_enum->destroy(status_enum);
 	
 	tracker->last_ack_time = time_monotonic(NULL);
 	
@@ -3468,8 +3466,9 @@ static void update_fragment_ack_status(fragment_tracker_t *tracker,
 /**
  * Send selective retransmission for missing fragments
  */
+/* removed: retransmit_missing_fragments() unused complex variant */
 static status_t retransmit_missing_fragments(private_task_manager_t *this, 
-											fragment_tracker_t *tracker)
+                                            fragment_tracker_t *tracker)
 {
 	enumerator_t *enumerator;
 	fragment_state_t *fragment;
@@ -3714,6 +3713,7 @@ static status_t retransmit_missing_fragments_simple(private_task_manager_t *this
  */
 static void process_fragment_ack(private_task_manager_t *this, message_t *message)
 {
+	DBG0(DBG_IKE, "LINE %d: process_fragment_ack enter, received message_id=%d", __LINE__, message->get_message_id(message));
 	notify_payload_t *notify;
 	chunk_t ack_data;
 	fragment_ack_data_t *ack;
@@ -3782,6 +3782,7 @@ static void process_fragment_ack(private_task_manager_t *this, message_t *messag
 		DBG0(DBG_IKE, "III4_FRAGMENT_ACK_ALL_CONFIRMED: all %d fragments acknowledged for message %d", 
 			 this->outgoing_tracker->total_fragments, message_id);
 		
+		DBG0(DBG_IKE, "INTERMEDIATE_I REQUEST TOTAL RETRANSMIT DATA SIZE %d", this->outgoing_tracker->total_transmitted_size);
 		// 取消重传超时，因为所有分片都已确认
 		if (this->current_retransmit_job)
 		{
@@ -3967,31 +3968,46 @@ static void send_immediate_fragment_ack(private_task_manager_t *this, message_t 
 	DBG0(DBG_IKE, "RRR4_ACK_GENERATION: generating FRAGMENT_ACK for message_id=%d, fragment=%d, "
 		  "ack_bitmap=0x%04x, total_fragments=%d, received_count=%d", 
 		  message_id, fragment_number, ntohs(ack.ack_bitmap[0]), total_fragments, received_count);
+
+	/* 额外调试输出：发送方自身的位图/片段状态，保持与解析端日志一致 */
+	DBG0(DBG_IKE, "MOON_TX_BITMAP_GENERATED: message_id=%d", message_id);
+	uint16_t bitmap_words_tx = (total_fragments + 15) / 16;
+	if (bitmap_words_tx > 4)
+	{
+		bitmap_words_tx = 4; /* bitmap array大小固定为8×16bit，总共4个word */
+	}
+	for (uint16_t idx = 0; idx < bitmap_words_tx; idx++)
+	{
+		uint16_t bitmap_value_tx = ntohs(ack.ack_bitmap[idx]);
+		DBG0(DBG_IKE, "MOON_TX_BITMAP_INDEX_%d: 0x%04x", idx, bitmap_value_tx);
+	}
+	for (uint16_t fid_tx = 1; fid_tx <= total_fragments && fid_tx <= 64; fid_tx++)
+	{
+		uint16_t b_idx = (fid_tx - 1) / 16;
+		uint16_t b_pos = (fid_tx - 1) % 16;
+		bool acked_tx = (ntohs(ack.ack_bitmap[b_idx]) & (1 << b_pos));
+		DBG0(DBG_IKE, "MOON_TX_FRAGMENT_STATUS: fragment_id=%d, acknowledged=%s",
+			 fid_tx, acked_tx ? "YES" : "NO");
+	}
+	DBG0(DBG_IKE, "III6_fragment ack tx update: %d/%d fragments acknowledged for message %d",
+		 received_count, total_fragments, message_id);
 	
 	// 使用标准IKE消息框架
 	notify_payload_t *notify = notify_payload_create_from_protocol_and_type(PLV2_NOTIFY, PROTO_NONE, FRAGMENT_ACK);
 	notify->set_notification_data(notify, ack_data);
 	
 	message_t *ack_msg = message_create(IKEV2_MAJOR_VERSION, IKEV2_MINOR_VERSION);
-	ack_msg->set_exchange_type(ack_msg, INFORMATIONAL);
-	ack_msg->set_request(ack_msg, TRUE);
-	ack_msg->set_message_id(ack_msg, 0); // 使用Message ID 0
-	ack_msg->set_ike_sa_id(ack_msg, this->ike_sa->get_id(this->ike_sa));
-	
-	// 设置地址
-	host_t *src = this->ike_sa->get_my_host(this->ike_sa);
-	host_t *dst = this->ike_sa->get_other_host(this->ike_sa);
-	if (src && dst)
-	{
-		ack_msg->set_source(ack_msg, src->clone(src));
-		ack_msg->set_destination(ack_msg, dst->clone(dst));
-	}
+    ack_msg->set_exchange_type(ack_msg, INFORMATIONAL);
+    ack_msg->set_request(ack_msg, TRUE);
+    /* Use Message ID 0 to follow FRAGMENT_ACK convention */
+    ack_msg->set_message_id(ack_msg, 0);
+    // 让 IKE 栈自行选择地址，无需手动设置 source/destination
 	
 	ack_msg->add_payload(ack_msg, (payload_t*)notify);
 	
-	// INFORMATIONAL消息默认不加密，直接生成即可
-	packet_t *packet = NULL;
-	status_t status = ack_msg->generate(ack_msg, this->ike_sa->get_keymat(this->ike_sa), &packet);
+    // 使用 IKE_SA 统一的生成逻辑，确保加密/完整性与状态一致
+    packet_t *packet = NULL;
+    status_t status = this->ike_sa->generate_message(this->ike_sa, ack_msg, &packet);
 	
 	if (status == SUCCESS && packet)
 	{

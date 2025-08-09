@@ -184,12 +184,7 @@ struct task_manager_t {
 	 */
 	void (*queue_ike_auth_only)(task_manager_t *this);
 
-	/**
-	 * Set phase separation mode for IKE exchanges.
-	 *
-	 * @param mode			0=normal, 1=init_only, 2=auth_only
-	 */
-	void (*set_phase_separation_mode)(task_manager_t *this, int mode);
+
 
 	/**
 	 * Queue IKE_SA rekey tasks.
