@@ -3294,6 +3294,7 @@ METHOD(message_t, get_received_fragments, uint16_t*,
 	}
 
 	received_count = array_count(this->fragments);
+	DBG1(DBG_ENC, "message_t, get_received_fragments: received_count: %d", received_count);
 	if (received_count > 0)
 	{
 		/* Allocate array for received fragment numbers */
@@ -3304,6 +3305,7 @@ METHOD(message_t, get_received_fragments, uint16_t*,
 			{
 				array_get(this->fragments, i, &fragment);
 				received_fragments[i] = fragment->num;
+				DBG1(DBG_ENC, "message_t, get_received_fragments: received_fragments[%d]: %d", i, received_fragments[i]);
 			}
 			*count = received_count;
 		}

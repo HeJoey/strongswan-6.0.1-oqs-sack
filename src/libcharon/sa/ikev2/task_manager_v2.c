@@ -1203,11 +1203,22 @@ static status_t process_response(private_task_manager_t *this,
 
 	if (message->get_exchange_type(message) != this->initiating.type)
 	{
-		DBG1(DBG_IKE, "received %N response, but expected %N",
-			 exchange_type_names, message->get_exchange_type(message),
-			 exchange_type_names, this->initiating.type);
-		charon->bus->ike_updown(charon->bus, this->ike_sa, FALSE);
-		return DESTROY_ME;
+		/* Special case: INFORMATIONAL response when expecting EXCHANGE_TYPE_UNDEFINED
+		 * This happens when a fragment ACK response arrives after exchange completion */
+		if (message->get_exchange_type(message) == INFORMATIONAL && 
+		    this->initiating.type == EXCHANGE_TYPE_UNDEFINED)
+		{
+			DBG0(DBG_IKE, "FRAGMENT_ACK_LATE_RESPONSE: received INFORMATIONAL response after exchange completion, processing normally");
+			/* Continue processing normally - this is likely a fragment ACK response */
+		}
+		else
+		{
+			DBG1(DBG_IKE, "received %N response, but expected %N",
+				 exchange_type_names, message->get_exchange_type(message),
+				 exchange_type_names, this->initiating.type);
+			charon->bus->ike_updown(charon->bus, this->ike_sa, FALSE);
+			return DESTROY_ME;
+		}
 	}
 
 	/* handle fatal INVALID_SYNTAX notifies */
@@ -3865,9 +3876,9 @@ static void process_fragment_ack(private_task_manager_t *this, message_t *messag
 			 this->outgoing_tracker->acked_fragments, this->outgoing_tracker->total_fragments,
 			 message_id);
 		
-		// 立即触发选择性重传 - 不等待定时器
-		DBG0(DBG_IKE, "IMMEDIATE_SELECTIVE_RETRANSMIT: triggering immediate retransmission for missing fragments");
-		retransmit_missing_fragments_simple(this, this->outgoing_tracker);
+		// 不立即触发重传，让定时器处理 - 给网络时间让更多ACK到达
+		DBG0(DBG_IKE, "FRAGMENT_ACK_PARTIAL_RECEIVED: %d/%d fragments acknowledged, waiting for timer-based retransmission",
+			 this->outgoing_tracker->acked_fragments, this->outgoing_tracker->total_fragments);
 	}
 }
 
