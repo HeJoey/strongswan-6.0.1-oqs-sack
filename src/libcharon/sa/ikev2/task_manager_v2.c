@@ -612,9 +612,36 @@ METHOD(task_manager_t, retransmit, status_t,
 		return SUCCESS;
 	}
 	
-	if (message_id == this->initiating.mid &&
-		array_count(this->initiating.packets))
+	// 添加详细调试输出 - 检查条件变量
+	DBG0(DBG_IKE, "RETRANSMIT_DEBUG_CONDITIONS: message_id=%d, this->initiating.mid=%d", 
+		 message_id, this->initiating.mid);
+	DBG0(DBG_IKE, "RETRANSMIT_DEBUG_SELECTIVE: selective_retransmission_enabled=%s, outgoing_tracker=%p", 
+		 this->selective_retransmission_enabled ? "YES" : "NO", this->outgoing_tracker);
+	if (this->outgoing_tracker) {
+		DBG0(DBG_IKE, "RETRANSMIT_DEBUG_TRACKER: tracker_message_id=%d, acked_fragments=%d, total_fragments=%d",
+			 this->outgoing_tracker->message_id, this->outgoing_tracker->acked_fragments, 
+			 this->outgoing_tracker->total_fragments);
+	}
+	DBG0(DBG_IKE, "RETRANSMIT_DEBUG_PACKETS: array_count(initiating.packets)=%d", 
+		 array_count(this->initiating.packets));
+	
+	// 修复：对于选择性重传，允许重传任何已跟踪的message_id
+	bool is_selective_retransmit = (this->selective_retransmission_enabled &&
+									this->outgoing_tracker &&
+									this->outgoing_tracker->message_id == message_id);
+	
+	DBG0(DBG_IKE, "RETRANSMIT_DEBUG_CALCULATED: is_selective_retransmit=%s", 
+		 is_selective_retransmit ? "YES" : "NO");
+	DBG0(DBG_IKE, "RETRANSMIT_DEBUG_FINAL_CHECK: (message_id == initiating.mid)=%s, (is_selective_retransmit)=%s, (array_count > 0)=%s",
+		 (message_id == this->initiating.mid) ? "YES" : "NO",
+		 is_selective_retransmit ? "YES" : "NO",
+		 (array_count(this->initiating.packets) > 0) ? "YES" : "NO");
+	
+	if ((message_id == this->initiating.mid && array_count(this->initiating.packets) > 0) ||
+		is_selective_retransmit)
 	{
+		DBG0(DBG_IKE, "RETRANSMIT_DEBUG_ENTERED_IF: successfully entered main retransmit if block");
+		
 		uint32_t timeout;
 		job_t *job;
 		enumerator_t *enumerator;
@@ -623,24 +650,38 @@ METHOD(task_manager_t, retransmit, status_t,
 		ike_mobike_t *mobike = NULL;
 
 		array_get(this->initiating.packets, 0, &packet);
+		DBG0(DBG_IKE, "RETRANSMIT_DEBUG_PACKET: got first packet from array, packet=%p", packet);
 
 		/* check if we are retransmitting a MOBIKE routability check */
+		DBG0(DBG_IKE, "RETRANSMIT_DEBUG_MOBIKE_CHECK: initiating.type=%d (INFORMATIONAL=%d)", 
+			 this->initiating.type, INFORMATIONAL);
 		if (this->initiating.type == INFORMATIONAL)
 		{
+			DBG0(DBG_IKE, "RETRANSMIT_DEBUG_MOBIKE: checking for MOBIKE tasks in active_tasks");
 			enumerator = array_create_enumerator(this->active_tasks);
 			while (enumerator->enumerate(enumerator, (void*)&task))
 			{
 				if (task->get_type(task) == TASK_IKE_MOBIKE)
 				{
 					mobike = (ike_mobike_t*)task;
+					DBG0(DBG_IKE, "RETRANSMIT_DEBUG_MOBIKE: found MOBIKE task=%p", mobike);
 					break;
 				}
 			}
 			enumerator->destroy(enumerator);
 		}
 
+		DBG0(DBG_IKE, "RETRANSMIT_DEBUG_MOBIKE_RESULT: mobike=%p", mobike);
+		if (mobike) {
+			DBG0(DBG_IKE, "RETRANSMIT_DEBUG_MOBIKE_PROBING: mobike->is_probing()=%s", 
+				 mobike->is_probing(mobike) ? "YES" : "NO");
+		}
+		
 		if (!mobike || !mobike->is_probing(mobike))
 		{
+			DBG0(DBG_IKE, "RETRANSMIT_DEBUG_NO_MOBIKE_PROBING: entering main retransmit logic");
+			DBG0(DBG_IKE, "RETRANSMIT_DEBUG_RETRANSMIT_COUNT: retransmitted=%d, max_tries=%d", 
+				 this->initiating.retransmitted, this->retransmit.tries);
 			if (this->initiating.retransmitted > this->retransmit.tries)
 			{
 				DBG1(DBG_IKE, "giving up after %d retransmits",
@@ -713,10 +754,10 @@ METHOD(task_manager_t, retransmit, status_t,
 						  "total_fragments=%d, acked_fragments=%d, retransmit_attempt=%d",
 						  message_id, missing_count, this->outgoing_tracker->total_fragments,
 						  this->outgoing_tracker->acked_fragments, this->initiating.retransmitted);
-			// 共享超时机制：使用与传统重传相同的超时计算和调度
-			uint32_t timeout = retransmission_timeout(&this->retransmit,
-													 this->initiating.retransmitted, TRUE);
+			// 简化定时器：固定2秒重传用于调试，但稍微提前以避免与旧作业冲突
+			uint32_t timeout = 1800; // 固定1.8秒重传，稍早于旧作业
 			this->initiating.retransmitted++;
+			DBG0(DBG_IKE, "SELECTIVE_RETRANSMIT_FIXED_TIMEOUT: using fixed 1.8 second timeout for debugging (avoiding old job conflict)");
 			
 			// 最后检查：确保在创建新作业前所有分片还没有被确认
 			if (this->outgoing_tracker && 
@@ -726,11 +767,14 @@ METHOD(task_manager_t, retransmit, status_t,
 				return SUCCESS;
 			}
 			
-			DBG0(DBG_IKE, "RETRANSMIT_JOB_CREATING: creating new retransmit job for message_id=%d", message_id);
-			this->current_retransmit_job = (job_t*)retransmit_job_create(this->initiating.mid,
-													   this->ike_sa->get_id(this->ike_sa));
+						// 修复：对于选择性重传，使用tracker的message_id，不是传递的参数message_id
+			uint32_t correct_message_id = this->outgoing_tracker->message_id;
+			DBG0(DBG_IKE, "RETRANSMIT_JOB_CREATING: creating new retransmit job for message_id=%d (corrected from %d)", 
+				 correct_message_id, message_id);
+			this->current_retransmit_job = (job_t*)retransmit_job_create(correct_message_id,
+												   this->ike_sa->get_id(this->ike_sa));
 			lib->scheduler->schedule_job(lib->scheduler, this->current_retransmit_job, timeout);
-			DBG0(DBG_IKE, "SELECTIVE_RETRANSMIT_SHARED_TIMEOUT: next retransmit in %d ms (same as traditional), job=%p", 
+			DBG0(DBG_IKE, "SELECTIVE_RETRANSMIT_FIXED_TIMER: next retransmit in %d ms (fixed for debugging), job=%p", 
 				 timeout, this->current_retransmit_job);
 			return SUCCESS;
 		}
@@ -808,11 +852,46 @@ METHOD(task_manager_t, retransmit, status_t,
 		}
 
 		this->initiating.retransmitted++;
-		this->current_retransmit_job = (job_t*)retransmit_job_create(this->initiating.mid,
+		// 修复：对于选择性重传，使用实际需要重传的message_id
+		uint32_t job_message_id = is_selective_retransmit ? message_id : this->initiating.mid;
+		DBG0(DBG_IKE, "RETRANSMIT_DEBUG_JOB_CREATE_TRADITIONAL: using message_id=%d (is_selective=%s, actual_message_id=%d, initiating.mid=%d)",
+			 job_message_id, is_selective_retransmit ? "YES" : "NO", message_id, this->initiating.mid);
+		this->current_retransmit_job = (job_t*)retransmit_job_create(job_message_id,
 											this->ike_sa->get_id(this->ike_sa));
 		lib->scheduler->schedule_job_ms(lib->scheduler, this->current_retransmit_job, timeout);
 		return SUCCESS;
 	}
+	else
+	{
+		DBG0(DBG_IKE, "RETRANSMIT_DEBUG_FAILED_CONDITIONS: did not enter main retransmit if block!");
+		DBG0(DBG_IKE, "RETRANSMIT_DEBUG_FAILED_REASON: main condition failed - message_id=%d does not match initiating.mid=%d and is_selective_retransmit=%s",
+			 message_id, this->initiating.mid, 
+			 (this->selective_retransmission_enabled && this->outgoing_tracker && 
+			  this->outgoing_tracker->message_id == message_id) ? "YES" : "NO");
+		
+		// 修复：检测旧重传作业的情况
+		if (message_id < this->initiating.mid)
+		{
+			DBG0(DBG_IKE, "RETRANSMIT_OLD_JOB_DETECTED: message_id=%d < current_mid=%d, this is an old retransmit job", 
+				 message_id, this->initiating.mid);
+			
+			// 检查是否需要触发选择性重传
+			if (this->selective_retransmission_enabled && this->outgoing_tracker &&
+				this->outgoing_tracker->message_id == this->initiating.mid &&
+				this->outgoing_tracker->acked_fragments < this->outgoing_tracker->total_fragments)
+			{
+				DBG0(DBG_IKE, "RETRANSMIT_OLD_JOB_TRIGGERING_SELECTIVE: triggering selective retransmission for message_id=%d instead", 
+					 this->initiating.mid);
+				// 递归调用，但使用正确的message_id
+				return retransmit(this, this->initiating.mid);
+			}
+			
+			DBG0(DBG_IKE, "RETRANSMIT_OLD_JOB_GRACEFUL_EXIT: no selective retransmission needed, gracefully exiting");
+			return SUCCESS;  // 优雅退出，不报错
+		}
+	}
+	
+	DBG0(DBG_IKE, "RETRANSMIT_DEBUG_RETURNING_INVALID_STATE: returning INVALID_STATE");
 	return INVALID_STATE;
 }
 
@@ -1332,7 +1411,30 @@ static status_t process_response(private_task_manager_t *this,
 	enumerator->destroy(enumerator);
 
 	this->initiating.mid++;
+	// 修复：清理旧的重传作业引用，因为message_id已经推进
+	if (this->current_retransmit_job)
+	{
+		DBG0(DBG_IKE, "PROCESS_RESPONSE_CLEAR_OLD_JOB: clearing retransmit job reference for old message_id=%d", 
+			 this->initiating.mid - 1);
+		// 作业仍在scheduler中，但我们清除引用，避免状态不一致
+		// 当旧作业执行时，它会发现条件不匹配并正常退出
+		this->current_retransmit_job = NULL;
+	}
+	
 	this->initiating.type = EXCHANGE_TYPE_UNDEFINED;
+	
+	// 修复：在清空packets之前检查是否需要为选择性重传创建新的重传作业
+	bool selective_retransmit_needed = (this->selective_retransmission_enabled && 
+										this->outgoing_tracker &&
+										this->outgoing_tracker->acked_fragments < this->outgoing_tracker->total_fragments);
+	
+	if (selective_retransmit_needed)
+	{
+		uint32_t new_message_id = this->outgoing_tracker->message_id;
+		DBG0(DBG_IKE, "PROCESS_RESPONSE_SELECTIVE_RETRANSMIT_NEEDED: message_id=%d, acked=%d/%d fragments, will create retransmit job after initiate", 
+			 new_message_id, this->outgoing_tracker->acked_fragments, this->outgoing_tracker->total_fragments);
+	}
+	
 	clear_packets(this->initiating.packets);
 
 	array_compress(this->active_tasks);
